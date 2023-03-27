@@ -1,6 +1,5 @@
 import Head from "next/head";
-import { Inter } from "next/font/google";
-import { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import styled from "styled-components";
@@ -8,6 +7,9 @@ import { AiFillEdit, AiFillDelete } from "react-icons/ai";
 
 import { colors } from "@/config/colors";
 import Loader from "@/components/Loader";
+import { Field, Form, Formik } from "formik";
+import * as Yup from "yup";
+import TodoSection from "@/components/TodoSection";
 
 const Title = styled.h1`
   text-align: center;
@@ -26,13 +28,14 @@ const Title = styled.h1`
   font-size: 45px;
 `;
 
-const NewTodo = styled.div`  max-width: 1140px;
-width: 100%;
-margin: 30px auto;
-display: flex;
-align-items: center;
-justify-content: center;
- `;
+const NewTodo = styled.div`
+  max-width: 1140px;
+  width: 100%;
+  margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 
 const TodoItems = styled.div`
   max-width: 1140px;
@@ -44,21 +47,6 @@ const TodoItems = styled.div`
   justify-content: center;
   flex-direction: column;
   gap: 20px;
-`;
-
-const TODOList = styled.ul`
-  color: ${colors.textC};
-  background-color: #a2a8d3;
-  border-radius: 8px;
-  border: 2px solid #233142;
-  max-width: 450px;
-  width: 100%;
-  height: 100px;
-  display: flex;
-  /* align-items: baseline; */
-  flex-direction: row;
-  justify-content: space-between; 
-  padding: 20px;
 `;
 
 const TodoID = styled.li`
@@ -75,56 +63,73 @@ const Text = styled.li`
   font-weight: 600;
 `;
 
-const TODOItems = styled.li`
-  list-style-type: none;
-  :nth-child(1) {
-    font-size: 26px;
-    color: #38598b;
-    font-weight: 600;
-  }
-`;
-
 export default function Home() {
   const [first, setfirst] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [todoId, setTodoId] = useState("")
+  const [todoId, setTodoId] = useState("");
 
-  const [text, setText] = useState("");
-  const [completed, setCompleted] = useState(null)
+  const [todoText, setTodoText] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const URL = "http://localhost:3001/todo-items"
+  // const [showEdit, setShowEdit] = useState(true);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const URL = "http://localhost:3001/todo-items";
 
   const allTodo = () => {
-   setIsLoading(true);
+    setIsLoading(true);
     axios
-         .get(`${URL}`)
-    .then((res) => {
-      setfirst(res.data);
-      setIsLoading(false); 
-    })
-    .catch((error) => console.error(error))
-    
-    }
+      .get(`${URL}`)
+      .then((res) => {
+        setfirst(res.data);
+        setIsLoading(false);
+      })
+      .catch((error) => console.error(error));
+  };
 
-  useEffect(() => { allTodo() }, []);
+  useEffect(() => {
+    allTodo();
+  }, []);
 
-  const newTodo =()=>{
-    axios.post(`${URL}`,{text})
-  }
+  const updatedTodo = (todoID, isCpmplete) => {
+    axios
+      .put(`${URL}/${todoID}`, { text: todoText, isCompleted: isCpmplete })
+      .then(() => {
+        allTodo();
+      });
+  };
 
-  const updateTodo = (todoID)=>{
-    axios.patch(`${URL}/${todoID}`)
-  }
+  const deleteTodo = (todoID) => {
+    axios.delete(`${URL}/${todoID}`).then(() => {
+      allTodo();
+    });
+  };
 
-  const deleteTodo =(todoID)=>{
-    axios.delete(`${URL}/${todoID}`).then(()=>{
+  const editHandleChange = (e) => {
+    setTodoText(e.target.value);
+  };
 
-      allTodo()
-    }) 
-  }
- 
+  const completeTodo = (values) => {
+    // updatedTodo(values.id, values.isCompleted);
+    axios
+      .put(`${URL}/${values.id}`, {
+        text: values.text,
+        isCompleted: values.isCompleted,
+      })
+      .then(() => {
+        console.log(first);
+      });
+  };
+
+  const TodoSchema = Yup.object().shape({
+    text: Yup.string()
+      .min(5, "Text must be 5 char at least")
+      .max(50, "Too long")
+      .required("Full name is required"),
+  });
+  console.log(first);
+
   return (
     <>
       <Head>
@@ -136,40 +141,77 @@ export default function Home() {
       <main>
         <Title>Todo List App</Title>
         <NewTodo>
-          <form>
-            <section>
-              <label for="text">Enter Task</label>
-              <input
-                type="text"
-                placeholder="Enter Task"
-                onChange={(e) =>  setText(e.target.value) }
-                name="text"
-                id="text"
-              />
-              <label for="comp">Status</label>
-              
-            </section>
-            <button type="submit" onClick={newTodo}>+Add</button>
-          </form>
+          <Formik
+            initialValues={{
+              text: todoText,
+            }}
+            validationSchema={TodoSchema}
+            onSubmit={async (values, { resetForm }) => {
+              await axios
+                .post(`${URL}`, { text: values.text })
+                .then((res) => {
+                  allTodo();
+                  setHasSubmitted(true);
+                  resetForm({ text: "" });
+                })
+                .catch((error) => console.log(error));
+            }}
+          >
+            {({
+              errors,
+              touched,
+              handleBlur,
+              handleChange,
+              handleSubmit,
+              values,
+            }) => (
+              <Form>
+                <div>{errors.text && touched.text && errors.text}</div>
+                <Field
+                  name="text"
+                  type="text"
+                  placeholder="text"
+                  onBlur={handleBlur}
+                  value={values.text}
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                />
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    handleSubmit(e);
+                  }}
+                >
+                  ADD +
+                </button>
+              </Form>
+            )}
+          </Formik>
         </NewTodo>
         {isLoading ? (
           <Loader />
         ) : (
           <>
-          <TodoItems>
-            <h2>My List</h2>
-            {first.map((todo) => (
-              <TODOList key={todo.id}> 
-                <Text >{todo.text}</Text>
-                <TODOItems>
-                <input type="checkbox"  value={completed} onClick={()=>setCompleted(true)}/>
-                  <AiFillEdit size={25} color={"#113f67"} />
-                  <AiFillDelete size={25} color={"red"}  onClick={() => {deleteTodo(todo.id)}}/>
-                </TODOItems>
-              </TODOList>
-            ))}
-          </TodoItems>
-            </>
+            <TodoItems>
+              <h2>My List</h2>
+              {first.map((todo) => (
+                <React.Fragment key={todo.id}>
+                  <TodoSection
+                    id={todo.id}
+                    text={todo.text}
+                    completedTodo={todo.isCompleted}
+                    todoText={todoText}
+                    setTodoText={setTodoText}
+                    deleteTodo={deleteTodo}
+                    editHandleChange={editHandleChange}
+                    updatedTodo={updatedTodo}
+                    completeTodo={completeTodo}
+                  />
+                </React.Fragment>
+              ))}
+            </TodoItems>
+          </>
         )}
       </main>
     </>
