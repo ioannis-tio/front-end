@@ -2,17 +2,18 @@ import styled from "styled-components";
 import { AiFillEdit, AiFillDelete } from "react-icons/ai";
 import { colors } from "@/config/colors";
 import { useState } from "react";
+import * as Yup from "yup";
+import { Formik } from "formik";
 
 const TODOList = styled.ul`
   color: ${colors.textC};
   background-color: #a2a8d3;
   border-radius: 8px;
   border: 2px solid #233142;
-  max-width: 450px;
+  max-width: 300px;
   width: 100%;
-  height: 100px;
+  height: 250px;
   display: flex;
-  /* align-items: baseline; */
   flex-direction: row;
   justify-content: space-between;
   padding: 20px;
@@ -21,6 +22,10 @@ const TODOList = styled.ul`
 const TODOItems = styled.li`
   list-style-type: none;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: #38598b; */
+  gap: 5px;
   :nth-child(1) {
     font-size: 26px;
     color: #38598b;
@@ -32,63 +37,101 @@ const DeleteBTN = styled.div`
   cursor: pointer;
 `;
 
-const CompleteSection = styled.div`
-  width: 10px;
-  height: 10px;
-  background-color: white;
+const Text = styled.p`
+  font-size: 20px;
+  max-width: 200px;
+  width: 100%;
+  text-decoration: ${({ done }) => (done ? "line-through" : "")};
+  word-wrap: break-word;
+`;
+
+const UpdateSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+`;
+
+const UpdateText = styled.input`
+  background-color: #3e54ac;
+  color: white;
+  height: 80px;
+  font-size: 18px;
+  max-width: 150px;
+  width: 100%;
+  word-wrap: break-word;
+  outline: none;
+`;
+
+const BTNUpdate = styled.button`
+  display: flex;
 `;
 
 export default function TodoSection({
   id,
   text,
-  todoText,
-  setTodoText,
   completedTodo,
   deleteTodo,
-  editHandleChange,
   updatedTodo,
-  completeTodo,
+  // completeTodo,
 }) {
   const [showEdit, setShowEdit] = useState(true);
-  const [isCpmplete, setIsCpmplete] = useState(false);
+  const [todoText, setTodoText] = useState(text);
+  const [done, setDone] = useState(completedTodo);
+
+  const editHandleChange = (e) => {
+    setTodoText(e.target.value);
+  };
+
+  const UpdateTodoSchema = Yup.object().shape({
+    text: Yup.string()
+      .min(5, "Text must be 5 char at least")
+      .max(50, "Too long")
+      .required("Full name is required"),
+  });
 
   return (
     <TODOList key={id}>
       {showEdit ? (
-        <div>{text}</div>
+        <Text done={done}>TASK: {todoText.toUpperCase()}</Text>
       ) : (
-        <>
-          <input type="text" onChange={editHandleChange} defaultValue={text} />
+        <UpdateSection>
+          <UpdateText
+            type="text"
+            onChange={editHandleChange}
+            value={todoText.toUpperCase()}
+          />
 
-          <button
+          <BTNUpdate
             onClick={() => {
-              updatedTodo(id, isCpmplete);
+              updatedTodo(id, todoText, done);
               setShowEdit(!showEdit);
             }}
           >
             Update
-          </button>
-        </>
+          </BTNUpdate>
+        </UpdateSection>
       )}
       <TODOItems>
         <input
           type={"checkbox"}
-          checked={completedTodo}
-          onClick={(e) =>
-            completeTodo({ id, text, isCompleted: e.target.checked })
-          }
+          checked={done}
+          onChange={() => {
+            setDone(!done);
+            updatedTodo(id, todoText, !done);
+            // completeTodo({ id, text: todoText, isCompleted: !done });
+          }}
         />
         <AiFillEdit
-          size={25}
+          size={20}
           color={"#113f67"}
           onClick={() => {
-            setTodoText(todoText);
             setShowEdit(!showEdit);
           }}
         />
         <DeleteBTN>
           <AiFillDelete
-            size={25}
+            size={20}
             color={"red"}
             onClick={() => {
               deleteTodo(id);

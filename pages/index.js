@@ -1,11 +1,7 @@
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
 import styled from "styled-components";
-import { AiFillEdit, AiFillDelete } from "react-icons/ai";
-
-import { colors } from "@/config/colors";
 import Loader from "@/components/Loader";
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -17,15 +13,38 @@ const Title = styled.h1`
   align-items: center;
   justify-content: center;
   margin: 10px auto 0;
-  background-image: linear-gradient(45deg, #111111, #fd7a23);
-  background-size: 100%;
-  background-repeat: repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #3e54ac;
   text-align: left;
-  -webkit-text-fill-color: transparent;
   padding-bottom: 20px;
-  font-size: 45px;
+  font-size: 55px;
+  @media (max-width: 991px) {
+    font-size: 35px;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: red;
+  font-size: 16px;
+`;
+
+const FieldInput = styled(Field)`
+  max-width: 250px;
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: 5px;
+  outline: none;
+  font-size: 16px;
+`;
+const BTN = styled.button`
+  max-width: 250px;
+  width: 100%;
+  margin-top: 5px;
+  padding: 4px 0;
+  color: #ecf2ff;
+  background-color: #3e54ac;
+  border: 0px;
+  border-radius: 5px;
+  cursor: pointer;
 `;
 
 const NewTodo = styled.div`
@@ -38,6 +57,7 @@ const NewTodo = styled.div`
 `;
 
 const TodoItems = styled.div`
+  padding: 50px 0;
   max-width: 1140px;
   width: 100%;
   margin: 0 auto;
@@ -45,34 +65,23 @@ const TodoItems = styled.div`
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
 `;
 
-const TodoID = styled.li`
-  list-style-type: none;
-  font-size: 16px;
-  color: #38598b;
-  font-weight: 600;
-`;
-
-const Text = styled.li`
-  list-style-type: none;
-  font-size: 20px;
-  color: #113f67;
-  font-weight: 600;
+const ListTitle = styled.h2`
+  color: #3e54ac;
+  font-size: 26px;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
 `;
 
 export default function Home() {
   const [first, setfirst] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [todoId, setTodoId] = useState("");
-
   const [todoText, setTodoText] = useState("");
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  // const [showEdit, setShowEdit] = useState(true);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const URL = "http://localhost:3001/todo-items";
@@ -83,7 +92,9 @@ export default function Home() {
       .get(`${URL}`)
       .then((res) => {
         setfirst(res.data);
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       })
       .catch((error) => console.error(error));
   };
@@ -92,7 +103,7 @@ export default function Home() {
     allTodo();
   }, []);
 
-  const updatedTodo = (todoID, isCpmplete) => {
+  const updatedTodo = (todoID, todoText, isCpmplete) => {
     axios
       .put(`${URL}/${todoID}`, { text: todoText, isCompleted: isCpmplete })
       .then(() => {
@@ -106,21 +117,16 @@ export default function Home() {
     });
   };
 
-  const editHandleChange = (e) => {
-    setTodoText(e.target.value);
-  };
-
-  const completeTodo = (values) => {
-    // updatedTodo(values.id, values.isCompleted);
-    axios
-      .put(`${URL}/${values.id}`, {
-        text: values.text,
-        isCompleted: values.isCompleted,
-      })
-      .then(() => {
-        console.log(first);
-      });
-  };
+  // const completeTodo = (values) => {
+  //   axios
+  //     .put(`${URL}/${values.id}`, {
+  //       text: values.text,
+  //       isCompleted: values.isCompleted,
+  //     })
+  //     .then(() => {
+  //       console.log(first);
+  //     });
+  // };
 
   const TodoSchema = Yup.object().shape({
     text: Yup.string()
@@ -128,7 +134,6 @@ export default function Home() {
       .max(50, "Too long")
       .required("Full name is required"),
   });
-  console.log(first);
 
   return (
     <>
@@ -166,8 +171,10 @@ export default function Home() {
               values,
             }) => (
               <Form>
-                <div>{errors.text && touched.text && errors.text}</div>
-                <Field
+                <ErrorMessage>
+                  {errors.text && touched.text && errors.text}
+                </ErrorMessage>
+                <FieldInput
                   name="text"
                   type="text"
                   placeholder="text"
@@ -177,14 +184,14 @@ export default function Home() {
                     handleChange(e);
                   }}
                 />
-                <button
+                <BTN
                   type="submit"
                   onClick={(e) => {
                     handleSubmit(e);
                   }}
                 >
                   ADD +
-                </button>
+                </BTN>
               </Form>
             )}
           </Formik>
@@ -193,20 +200,17 @@ export default function Home() {
           <Loader />
         ) : (
           <>
+            <ListTitle>My List</ListTitle>
             <TodoItems>
-              <h2>My List</h2>
               {first.map((todo) => (
                 <React.Fragment key={todo.id}>
                   <TodoSection
                     id={todo.id}
                     text={todo.text}
                     completedTodo={todo.isCompleted}
-                    todoText={todoText}
-                    setTodoText={setTodoText}
                     deleteTodo={deleteTodo}
-                    editHandleChange={editHandleChange}
                     updatedTodo={updatedTodo}
-                    completeTodo={completeTodo}
+                    // completeTodo={completeTodo}
                   />
                 </React.Fragment>
               ))}
