@@ -24,7 +24,6 @@ const TODOItems = styled.li`
   display: flex;
   align-items: center;
   justify-content: center;
-  /* background-color: #38598b; */
   gap: 5px;
   :nth-child(1) {
     font-size: 26px;
@@ -37,6 +36,14 @@ const DeleteBTN = styled.div`
   cursor: pointer;
 `;
 
+const TextSection = styled.div``;
+
+const Task = styled.p`
+  font-weight: 600;
+  text-decoration: underline;
+  font-size: 18px;
+`;
+
 const Text = styled.p`
   font-size: 20px;
   max-width: 200px;
@@ -44,6 +51,8 @@ const Text = styled.p`
   text-decoration: ${({ done }) => (done ? "line-through" : "")};
   word-wrap: break-word;
 `;
+
+const Created = styled.p``;
 
 const UpdateSection = styled.div`
   display: flex;
@@ -72,8 +81,9 @@ export default function TodoSection({
   text,
   completedTodo,
   deleteTodo,
+  updated,
   updatedTodo,
-  // completeTodo,
+  created,
 }) {
   const [showEdit, setShowEdit] = useState(true);
   const [todoText, setTodoText] = useState(text);
@@ -90,10 +100,33 @@ export default function TodoSection({
       .required("Full name is required"),
   });
 
+  const createdTime = created;
+  const dateCreated = new Date(createdTime);
+  const dateCrFormat =
+    dateCreated.getHours() +
+    ":" +
+    dateCreated.getMinutes() +
+    ", " +
+    dateCreated.toDateString();
+  // console.log(dateFormat);
+  const updatedTime = updated;
+  const updatedDate = new Date(updatedTime);
+  const updatedCrFormat =
+    updatedDate.getHours() +
+    ":" +
+    updatedDate.getMinutes() +
+    ", " +
+    updatedDate.toDateString();
+
   return (
-    <TODOList key={id}>
+    <TODOList>
       {showEdit ? (
-        <Text done={done}>TASK: {todoText.toUpperCase()}</Text>
+        <TextSection>
+          <Task>TASK:</Task>
+          <Text done={done}>{todoText.toUpperCase()}</Text>
+          <Created>Created At: {dateCrFormat}</Created>
+          <Created>Updated At: {updatedCrFormat}</Created>
+        </TextSection>
       ) : (
         <UpdateSection>
           <UpdateText

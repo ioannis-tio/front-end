@@ -92,6 +92,7 @@ export default function Home() {
       .get(`${URL}`)
       .then((res) => {
         setfirst(res.data);
+        console.log(res.data[0].createdAt);
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
@@ -105,7 +106,7 @@ export default function Home() {
 
   const updatedTodo = (todoID, todoText, isCpmplete) => {
     axios
-      .put(`${URL}/${todoID}`, { text: todoText, isCompleted: isCpmplete })
+      .patch(`${URL}/${todoID}`, { text: todoText, isCompleted: isCpmplete })
       .then(() => {
         allTodo();
       });
@@ -203,11 +204,13 @@ export default function Home() {
             <ListTitle>My List</ListTitle>
             <TodoItems>
               {first.map((todo) => (
-                <React.Fragment key={todo.id}>
+                <React.Fragment key={todo._id}>
                   <TodoSection
-                    id={todo.id}
+                    id={todo._id}
                     text={todo.text}
                     completedTodo={todo.isCompleted}
+                    created={todo.createdAt}
+                    updated={todo.updatedAt}
                     deleteTodo={deleteTodo}
                     updatedTodo={updatedTodo}
                     // completeTodo={completeTodo}
