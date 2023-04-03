@@ -118,17 +118,6 @@ export default function Home() {
     });
   };
 
-  // const completeTodo = (values) => {
-  //   axios
-  //     .put(`${URL}/${values.id}`, {
-  //       text: values.text,
-  //       isCompleted: values.isCompleted,
-  //     })
-  //     .then(() => {
-  //       console.log(first);
-  //     });
-  // };
-
   const TodoSchema = Yup.object().shape({
     text: Yup.string()
       .min(5, "Text must be 5 char at least")
