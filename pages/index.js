@@ -1,26 +1,34 @@
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Loader from "@/components/Loader";
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import TodoSection from "@/components/TodoSection";
+import { AiFillBell } from "react-icons/ai";
 
-const Title = styled.h1`
+const Title = styled.div`
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 10px auto 0;
-  color: #3e54ac;
   text-align: left;
   padding-bottom: 20px;
-  font-size: 55px;
+  font-size: 45px;
+  /* Image background */
+  background: url("https://s3.amazonaws.com/usefulangle/news/95-5f6cc1ad5575e.jpg");
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
   @media (max-width: 991px) {
     font-size: 35px;
   }
 `;
+
+const H1 = styled.h1``;
 
 const ErrorMessage = styled.div`
   color: red;
@@ -35,6 +43,7 @@ const FieldInput = styled(Field)`
   outline: none;
   font-size: 16px;
 `;
+
 const BTN = styled.button`
   max-width: 250px;
   width: 100%;
@@ -76,6 +85,26 @@ const ListTitle = styled.h2`
   width: 100%;
   margin: 0 auto;
   text-align: center;
+`;
+
+const B = keyframes`
+0% {rotate: 0deg;}
+ 10% {rotate: 10deg;}
+30% {rotate: -10deg;}
+ 45% {rotate: 5deg;}
+ 55% {rotate: -5deg;}
+ 65% {rotate: 0deg;}
+ 
+`;
+
+const Bell = styled.div`
+  /* height: 100px;
+  width: 100px; */
+  margin: 0 auto;
+  text-align: center;
+  animation-name: ${B};
+  animation-duration: 0.7s;
+  animation-iteration-count: infinite;
 `;
 
 export default function Home() {
@@ -134,7 +163,12 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Title>Todo List App</Title>
+        <Title>
+          <H1 className="text">Todo List App</H1>
+        </Title>
+        <Bell>
+          <AiFillBell size={70} />
+        </Bell>
         <NewTodo>
           <Formik
             initialValues={{
