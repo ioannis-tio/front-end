@@ -121,7 +121,6 @@ export default function Home() {
       .get(`${URL}`)
       .then((res) => {
         setfirst(res.data);
-        console.log(res.data[0].createdAt);
         setTimeout(() => {
           setIsLoading(false);
         }, 500);

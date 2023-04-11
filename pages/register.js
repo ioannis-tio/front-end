@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
+import axios from "axios";
+import Link from "next/link";
 
 const Title = styled.h1`
   text-align: center;
@@ -54,6 +56,10 @@ const BTN = styled.button`
 `;
 
 export default function register() {
+  // const [hasSubmitted1, setHasSubmitted1] = useState(
+
+  const URL = "http://localhost:3001/register";
+
   const UserSchema = Yup.object().shape({
     username: Yup.string()
       .min(5, "User must be at least 5 char")
@@ -71,10 +77,10 @@ export default function register() {
         "Password must contain at least one lowercase letter"
       )
       .matches(/^(?=.*[0-9])/, "Password must contain at least one number")
-      .matches(
-        /^(?=.*[!@#$%^&*])/,
-        "Password must contain at least one special character"
-      )
+      // .matches(
+      //   /^(?=.*[!@#$%^&*])/,
+      //   "Password must contain at least one special character"
+      // )
       .matches(/^(?=.{8,})/, "Password must contain at least 8 characters"),
     confrimPassword: Yup.string()
       .required()
@@ -96,7 +102,23 @@ export default function register() {
           }}
           validationSchema={UserSchema}
           onSubmit={async (values, { resetForm }) => {
-            console.log(values);
+            await axios
+              .post(`${URL}`, {
+                username: values.username,
+                email: values.email,
+                password: values.password,
+                confirmPassword: values.confrimPassword,
+              })
+              .then((res) => {
+                // setSubmitted(true);
+                resetForm({
+                  username: "",
+                  email: "",
+                  password: "",
+                  confrimPassword: "",
+                });
+              })
+              .catch((error) => console.log(error));
           }}
         >
           {({
@@ -115,6 +137,7 @@ export default function register() {
                 name="username"
                 type="username"
                 placeholder="Username"
+                autoComplete="off"
                 onBlur={handleBlur}
                 value={values.username}
                 onChange={(e) => {
@@ -142,6 +165,7 @@ export default function register() {
                 type="password"
                 placeholder="Password"
                 onBlur={handleBlur}
+                autoComplete="off"
                 value={values.password}
                 onChange={(e) => {
                   handleChange(e);
@@ -169,7 +193,7 @@ export default function register() {
                   console.log("Clicked");
                 }}
               >
-                Create User
+                <Link href={"/"}>Create User</Link>
               </BTN>
             </Form>
           )}
