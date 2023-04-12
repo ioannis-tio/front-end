@@ -7,6 +7,7 @@ import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import TodoSection from "@/components/TodoSection";
 import { AiFillBell } from "react-icons/ai";
+import Link from "next/link";
 
 const Title = styled.div`
   text-align: center;
@@ -107,6 +108,32 @@ const Bell = styled.div`
   animation-iteration-count: infinite;
 `;
 
+const RedirectSection = styled.div`
+  max-width: 400px;
+  width: 100%;
+  margin: 50px auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  text-align: center;
+`;
+
+const BTNRedi = styled.button`
+  max-width: 150px;
+  width: 100%;
+  margin-top: 5px;
+  padding: 10px 0;
+  color: #14171a;
+  background-color: #1da1f2;
+  border: 1px solid #14171a;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  :hover {
+    color: #e1e8ed;
+  }
+`;
+
 export default function Home() {
   const [first, setfirst] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,88 +188,96 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main>
-        <Title>
-          <H1 className="text">Todo List App</H1>
-        </Title>
-        <Bell>
-          <AiFillBell size={70} />
-        </Bell>
-        <NewTodo>
-          <Formik
-            initialValues={{
-              text: todoText,
-            }}
-            validationSchema={TodoSchema}
-            onSubmit={async (values, { resetForm }) => {
-              await axios
-                .post(`${URL}`, { text: values.text })
-                .then((res) => {
-                  allTodo();
-                  setHasSubmitted(true);
-                  resetForm({ text: "" });
-                })
-                .catch((error) => console.log(error));
-            }}
-          >
-            {({
-              errors,
-              touched,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-              values,
-            }) => (
-              <Form>
-                <ErrorMessage>
-                  {errors.text && touched.text && errors.text}
-                </ErrorMessage>
-                <FieldInput
-                  name="text"
-                  type="text"
-                  placeholder="text"
-                  onBlur={handleBlur}
-                  value={values.text}
-                  onChange={(e) => {
-                    handleChange(e);
-                  }}
+      {/* <main> */}
+      <Title>
+        <H1 className="text">Todo List App</H1>
+      </Title>
+      <Bell>
+        <AiFillBell size={70} />
+      </Bell>
+      <NewTodo>
+        <Formik
+          initialValues={{
+            text: todoText,
+          }}
+          validationSchema={TodoSchema}
+          onSubmit={async (values, { resetForm }) => {
+            await axios
+              .post(`${URL}`, { text: values.text })
+              .then((res) => {
+                allTodo();
+                setHasSubmitted(true);
+                resetForm({ text: "" });
+              })
+              .catch((error) => console.log(error));
+          }}
+        >
+          {({
+            errors,
+            touched,
+            handleBlur,
+            handleChange,
+            handleSubmit,
+            values,
+          }) => (
+            <Form>
+              <ErrorMessage>
+                {errors.text && touched.text && errors.text}
+              </ErrorMessage>
+              <FieldInput
+                name="text"
+                type="text"
+                placeholder="text"
+                onBlur={handleBlur}
+                value={values.text}
+                onChange={(e) => {
+                  handleChange(e);
+                }}
+              />
+              <BTN
+                type="submit"
+                onClick={(e) => {
+                  handleSubmit(e);
+                }}
+              >
+                ADD +
+              </BTN>
+            </Form>
+          )}
+        </Formik>
+      </NewTodo>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <ListTitle>My List</ListTitle>
+          <TodoItems>
+            {first.map((todo) => (
+              <React.Fragment key={todo._id}>
+                <TodoSection
+                  id={todo._id}
+                  text={todo.text}
+                  completedTodo={todo.isCompleted}
+                  created={todo.createdAt}
+                  updated={todo.updatedAt}
+                  deleteTodo={deleteTodo}
+                  updatedTodo={updatedTodo}
+                  // completeTodo={completeTodo}
                 />
-                <BTN
-                  type="submit"
-                  onClick={(e) => {
-                    handleSubmit(e);
-                  }}
-                >
-                  ADD +
-                </BTN>
-              </Form>
-            )}
-          </Formik>
-        </NewTodo>
-        {isLoading ? (
-          <Loader />
-        ) : (
-          <>
-            <ListTitle>My List</ListTitle>
-            <TodoItems>
-              {first.map((todo) => (
-                <React.Fragment key={todo._id}>
-                  <TodoSection
-                    id={todo._id}
-                    text={todo.text}
-                    completedTodo={todo.isCompleted}
-                    created={todo.createdAt}
-                    updated={todo.updatedAt}
-                    deleteTodo={deleteTodo}
-                    updatedTodo={updatedTodo}
-                    // completeTodo={completeTodo}
-                  />
-                </React.Fragment>
-              ))}
-            </TodoItems>
-          </>
-        )}
-      </main>
+              </React.Fragment>
+            ))}
+          </TodoItems>
+        </>
+      )}
+      <RedirectSection>
+        <BTNRedi>
+          <Link href={"/login"}>Login</Link>
+        </BTNRedi>
+        <BTNRedi>
+          <Link href={"/register"}>Register</Link>
+        </BTNRedi>
+      </RedirectSection>
+      {/* </main> */}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
@@ -15,7 +15,6 @@ const Title = styled.h1`
   text-align: left;
   padding-bottom: 20px;
   font-size: 55px;
-
   @media (max-width: 991px) {
     font-size: 35px;
   }
@@ -75,74 +74,50 @@ const BTNRedi = styled.button`
   background-color: #1da1f2;
   border: 1px solid #14171a;
   border-radius: 5px;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
+  transition: all 0.5s ease-in-out;
   cursor: pointer;
   :hover {
+    border-radius: 35px;
+    transform: translateY(-10px);
+
     color: #e1e8ed;
   }
 `;
 
-export default function register() {
+export default function login() {
   // const [hasSubmitted1, setHasSubmitted1] = useState(
 
   const URL = "http://localhost:3001/register";
 
   const UserSchema = Yup.object().shape({
-    username: Yup.string()
-      .min(5, "User must be at least 5 char")
-      .max(20, "Too long")
-      .required("Username is required"),
     email: Yup.string().email("Invalid email").required("Required"),
-    password: Yup.string()
-      .label("password")
-      .matches(
-        /^(?=.*[A-Z])/,
-        "Password must contain at least one uppercase letter"
-      )
-      .matches(
-        /^(?=.*[a-z])/,
-        "Password must contain at least one lowercase letter"
-      )
-      .matches(/^(?=.*[0-9])/, "Password must contain at least one number")
-      // .matches(
-      //   /^(?=.*[!@#$%^&*])/,
-      //   "Password must contain at least one special character"
-      // )
-      .matches(/^(?=.{8,})/, "Password must contain at least 8 characters"),
-    confrimPassword: Yup.string()
-      .required()
-      .label("Confrim password")
-      .oneOf([Yup.ref("password"), null], "password must be the same"),
+    password: Yup.string().label("password"),
   });
 
   return (
     <>
-      <Title>Register Form</Title>
+      <Title>Login </Title>
 
       <RegisterForm>
         <Formik
           initialValues={{
-            username: "",
             email: "",
             password: "",
-            confrimPassword: "",
           }}
           validationSchema={UserSchema}
           onSubmit={async (values, { resetForm }) => {
             await axios
               .post(`${URL}`, {
-                username: values.username,
                 email: values.email,
                 password: values.password,
-                confirmPassword: values.confrimPassword,
               })
               .then((res) => {
                 // setSubmitted(true);
                 resetForm({
-                  username: "",
                   email: "",
                   password: "",
-                  confrimPassword: "",
                 });
               })
               .catch((error) => console.log(error));
@@ -157,20 +132,6 @@ export default function register() {
             values,
           }) => (
             <Form>
-              <ErrorMessage>
-                {errors.username && touched.username && errors.username}
-              </ErrorMessage>
-              <FieldInput
-                name="username"
-                type="username"
-                placeholder="Username"
-                autoComplete="off"
-                onBlur={handleBlur}
-                value={values.username}
-                onChange={(e) => {
-                  handleChange(e);
-                }}
-              />
               <ErrorMessage>
                 {errors.email && touched.email && errors.email}
               </ErrorMessage>
@@ -198,21 +159,7 @@ export default function register() {
                   handleChange(e);
                 }}
               />
-              <ErrorMessage>
-                {errors.confrimPassword &&
-                  touched.confrimPassword &&
-                  errors.confrimPassword}
-              </ErrorMessage>
-              <FieldInput
-                name="confrimPassword"
-                type="password"
-                placeholder="Confrim Password"
-                onBlur={handleBlur}
-                value={values.confrimPassword}
-                onChange={(e) => {
-                  handleChange(e);
-                }}
-              />
+
               <BTN
                 type="submit"
                 onClick={(e) => {
@@ -231,7 +178,7 @@ export default function register() {
           <Link href={"/"}>Todo</Link>
         </BTNRedi>
         <BTNRedi>
-          <Link href={"/login"}>login</Link>
+          <Link href={"/register"}>Register</Link>
         </BTNRedi>
       </RedirectSection>
     </>
